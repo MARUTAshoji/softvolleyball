@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ソフトバレー">
+<meta name="theme-color" content="#1E293B">
+<title>ソフトバレー チーム管理</title>
+<link rel="manifest" href="#" id="manifest-placeholder">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #F1F5F9;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+button { font-family: inherit; }
+input { font-family: inherit; }
+select { font-family: inherit; }
+
+/* Header */
+.header {
+  background: #1E293B;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-title { font-size: 17px; font-weight: 800; color: #F8FAFC; }
+.header-sub { font-size: 11px; color: #94A3B8; }
+.header-badges { display: flex; gap: 6px; }
+.badge {
+  color: #fff; border-radius: 20px; padding: 4px 12px;
+  font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 5px;
+}
+.badge-m { background: #3B82F6; }
+.badge-f { background: #F43F5E; }
+.dot-white { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 2px solid #E2E8F0;
+  position: sticky;
+  top: calc(62px + env(safe-area-inset-top));
+  z-index: 99;
+}
+.tab-btn {
+  flex: 1; padding: 12px 2px; background: none; border: none;
+  color: #94A3B8; font-weight: 500; font-size: 12px; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn.active { color: #2563EB; font-weight: 700; border-bottom-color: #2563EB; }
+
+/* Content */
+.content { padding: 16px; }
+
+/* Cards */
+.card {
+  background: #fff; border-radius: 16px; padding: 16px;
+  margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.card-title { font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 10px; }
+
+/* Input row */
+.input-row { display: flex; gap: 8px; }
+.input-row input {
+  flex: 1; padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid #E2E8F0; font-size: 15px; outline: none;
+  background: #F8FAFC; color: #1E293B;
+}
+.input-row input:focus { border-color: #2563EB; }
+.input-row select {
+  padding: 10px 8px; border-radius: 10px;
+  border: 1.5px solid #E2E8F0; font-size: 14px;
+  background: #F8FAFC; outline: none; color: #1E293B;
+}
+.btn-add {
+  padding: 10px 16px; border-radius: 10px; background: #2563EB;
+  border: none; color: #fff; font-weight: 800; font-size: 20px; cursor: pointer;
+}
+
+/* Counter row */
+.counter-row { display: flex; gap: 12px; align-items: center; }
+.counter-block { flex: 1; text-align: center; }
+.counter-label {
+  font-size: 12px; font-weight: 700; color: #475569;
+  margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.auto-badge {
+  background: #DCFCE7; color: #16A34A; border-radius: 6px;
+  padding: 1px 6px; font-size: 10px; font-weight: 700;
+}
+.counter-controls { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.counter-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #F1F5F9; border: 1.5px solid #E2E8F0;
+  font-size: 20px; font-weight: 700; cursor: pointer; color: #334155;
+  display: flex; align-items: center; justify-content: center;
+}
+.counter-val { font-size: 32px; font-weight: 900; min-width: 36px; text-align: center; }
+.counter-val.blue { color: #2563EB; }
+.counter-val.orange { color: #EA580C; }
+.divider-v { width: 1px; background: #E2E8F0; align-self: stretch; }
+.btn-draw-sm {
+  padding: 12px 14px; border-radius: 12px; background: #2563EB;
+  border: none; color: #fff; font-size: 24px; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+}
+.btn-draw-sm:disabled { background: #CBD5E1; box-shadow: none; cursor: not-allowed; }
+
+/* Member list */
+.member-section-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; margin: 8px 0 4px;
+}
+.member-section-label.male { color: #3B82F6; }
+.member-section-label.female { color: #F43F5E; }
+.member-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 10px;
+  background: #F8FAFC; border: 1px solid #E2E8F0; margin-bottom: 6px;
+}
+.member-row-left { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #1E293B; }
+.btn-remove {
+  background: none; border: none; color: #CBD5E1; font-size: 18px;
+  cursor: pointer; padding: 0 4px; line-height: 1;
+}
+
+/* Gender dot */
+.gdot {
+  display: inline-block; width: 12px; height: 12px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.gdot.male { background: #3B82F6; box-shadow: 0 0 0 2px #BFDBFE; }
+.gdot.female { background: #F43F5E; box-shadow: 0 0 0 2px #FECDD3; }
+
+/* Main draw button */
+.btn-main {
+  width: 100%; padding: 16px; border-radius: 14px; border: none;
+  color: #fff; font-weight: 800; font-size: 17px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+}
+.btn-main.blue { background: #2563EB; }
+.btn-main:disabled { background: #CBD5E1; box-shadow: none; cursor: not-allowed; }
+
+/* Warning */
+.warning {
+  background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 12px;
+  padding: 10px 14px; font-size: 13px; color: #92400E; margin-bottom: 12px;
+}
+
+/* Team cards */
+.team-card {
+  border: 2px solid; border-radius: 18px; padding: 16px; margin-bottom: 12px;
+}
+.team-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.team-card-name { display: flex; align-items: center; gap: 8px; }
+.team-card-emoji { font-size: 22px; }
+.team-card-label { font-size: 18px; font-weight: 800; }
+.team-count-badges { display: flex; gap: 6px; align-items: center; }
+.team-count-badge {
+  color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 700;
+}
+.member-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.member-tag {
+  background: #fff; border: 1.5px solid; border-radius: 20px;
+  padding: 5px 12px; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-reshuffle {
+  width: 100%; padding: 14px; border-radius: 14px;
+  background: #fff; border: 2px solid #2563EB;
+  color: #2563EB; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 4px;
+}
+
+/* Rounds */
+.round-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.round-label {
+  background: #1E293B; color: #fff; border-radius: 10px;
+  padding: 4px 14px; font-size: 13px; font-weight: 800;
+}
+.rest-badge {
+  border: 1px solid; border-radius: 20px; padding: 2px 10px;
+  font-size: 12px; font-weight: 700;
+}
+.match-group {
+  background: #fff; border-radius: 14px; padding: 12px;
+  margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1.5px solid #E2E8F0;
+}
+.match-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.match-row + .match-row {
+  padding-top: 10px; margin-top: 10px; border-top: 1px dashed #E2E8F0;
+}
+.team-badge {
+  border: 1.5px solid; border-radius: 10px; padding: 5px 10px;
+  font-weight: 700; font-size: 13px;
+}
+.vs-label { color: #94A3B8; font-weight: 800; font-size: 13px; }
+.court-label { font-size: 11px; color: #94A3B8; font-weight: 600; min-width: 28px; }
+.score-group { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.score-check { font-size: 11px; color: #16A34A; font-weight: 700; }
+.score-input {
+  width: 42px; padding: 6px 2px; border-radius: 8px; text-align: center;
+  border: 2px solid; font-size: 16px; font-weight: 800; outline: none; background: #fff;
+}
+.score-dash { color: #CBD5E1; }
+
+/* Standings */
+.standings { background: #fff; border-radius: 16px; padding: 16px; margin-top: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.standings-title { font-size: 14px; font-weight: 800; color: #1E293B; margin-bottom: 12px; }
+.standing-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; border: 1.5px solid;
+}
+
+/* Rest tab */
+.rest-info {
+  background: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 12px;
+  padding: 10px 14px; font-size: 13px; color: #1D4ED8; margin-bottom: 14px; font-weight: 500;
+}
+.rest-row {
+  background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between;
+}
+.rest-round-label { font-size: 13px; font-weight: 800; color: #1E293B; }
+.rest-badges { display: flex; gap: 6px; }
+.rest-badge-item { border: 1.5px solid; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 700; }
+
+/* Empty */
+.empty { text-align: center; padding: 60px 20px; color: #CBD5E1; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-msg { font-size: 14px; }
+
+/* Tab content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span style="font-size:26px">🏐</span>
+    <div>
+      <div class="header-title">ソフトバレー</div>
+      <div class="header-sub">チーム管理</div>
+    </div>
+  </div>
+  <div class="header-badges">
+    <span class="badge badge-m"><span class="dot-white"></span><span id="male-count">4</span>人</span>
+    <span class="badge badge-f"><span class="dot-white"></span><span id="female-count">4</span>人</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(0)">👥 メンバー</button>
+  <button class="tab-btn" onclick="switchTab(1)">🎲 チーム分け</button>
+  <button class="tab-btn" onclick="switchTab(2)">🏐 試合</button>
+  <button class="tab-btn" onclick="switchTab(3)">⏸ 休憩</button>
+</div>
+
+<div class="content">
+
+  <!-- TAB 0: メンバー -->
+  <div class="tab-content active" id="tab-0">
+    <div class="card">
+      <div class="card-title">メンバーを追加</div>
+      <div class="input-row">
+        <input type="text" id="new-name" placeholder="名前" onkeydown="if(event.key==='Enter')addMember()">
+        <select id="new-gender">
+          <option value="male">● 男</option>
+          <option value="female">● 女</option>
+        </select>
+        <button class="btn-add" onclick="addMember()">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="counter-row">
+        <div class="counter-block">
+          <div class="counter-label" id="team-label">
+            チーム数 <span class="auto-badge" id="team-auto-badge">自動</span>
+          </div>
+          <div class="counter-controls">
+            <button class="counter-btn" onclick="changeTeamCount(-1)">−</button>
+            <span class="counter-val blue" id="team-count-val">2</span>
+            <button class="counter-btn" onclick="changeTeamCount(1)">＋</button>
+          </div>
+        </div>
+        <div class="divider-v"></div>
+        <div class="counter-block">
+          <div class="counter-label" id="court-label">
+            コート数 <span class="auto-badge" id="court-auto-badge">自動</span>
+          </div>
+          <div class="counter-controls">
+            <button class="counter-btn" onclick="changeCourtCount(-1)">−</button>
+            <span class="counter-val orange" id="court-count-val">1</span>
+            <button class="counter-btn" onclick="changeCourtCount(1)">＋</button>
+          </div>
+        </div>
+        <button class="btn-draw-sm" id="btn-draw-sm" onclick="doDraw()">🎲</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">登録メンバー（<span id="member-total">8</span>人）</div>
+      <div id="member-list"></div>
+    </div>
+
+    <div id="warning-box"></div>
+    <button class="btn-main blue" id="btn-draw-main" onclick="doDraw()">🎲 くじ引き！</button>
+  </div>
+
+  <!-- TAB 1: チーム分け -->
+  <div class="tab-content" id="tab-1">
+    <div id="team-result"></div>
+  </div>
+
+  <!-- TAB 2: 試合 -->
+  <div class="tab-content" id="tab-2">
+    <div id="rounds-content"></div>
+  </div>
+
+  <!-- TAB 3: 休憩 -->
+  <div class="tab-content" id="tab-3">
+    <div id="rest-content"></div>
+  </div>
+
+</div>
+
+<script>
+// ===== STATE =====
+const PALETTE = [
+  { bg: "#EFF6FF", border: "#2563EB", text: "#1D4ED8", label: "チームA", emoji: "🔵" },
+  { bg: "#FFF1F2", border: "#E11D48", text: "#BE123C", label: "チームB", emoji: "🔴" },
+  { bg: "#F0FDF4", border: "#16A34A", text: "#15803D", label: "チームC", emoji: "🟢" },
+  { bg: "#FEFCE8", border: "#CA8A04", text: "#A16207", label: "チームD", emoji: "🟡" },
+  { bg: "#FAF5FF", border: "#9333EA", text: "#7E22CE", label: "チームE", emoji: "🟣" },
+  { bg: "#ECFEFF", border: "#0891B2", text: "#0E7490", label: "チームF", emoji: "🩵" },
+  { bg: "#FFF7ED", border: "#EA580C", text: "#C2410C", label: "チームG", emoji: "🟠" },
+  { bg: "#F8FAFC", border: "#475569", text: "#334155", label: "チームH", emoji: "⚪" },
+];
+const tc = i => PALETTE[i % PALETTE.length];
+
+let members = [
+  { id:1, name:"田中", gender:"male" },
+  { id:2, name:"鈴木", gender:"male" },
+  { id:3, name:"佐藤", gender:"male" },
+  { id:4, name:"山田", gender:"male" },
+  { id:5, name:"伊藤", gender:"female" },
+  { id:6, name:"渡辺", gender:"female" },
+  { id:7, name:"小林", gender:"female" },
+  { id:8, name:"加藤", gender:"female" },
+];
+let nextId = 9;
+let teamCount = 2;
+let courtCount = 1;
+let autoTeamCount = 2;
+let autoCourtCount = 1;
+let teams = null;
+let rounds = [];
+let scores = {};
+let currentTab = 0;
+
+// ===== UTILS =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function calcAuto() {
+  autoTeamCount = Math.max(2, Math.ceil(members.length / 4));
+  autoCourtCount = autoTeamCount >= 4 ? 2 : 1;
+}
+
+function drawLots(memberList, tc_count) {
+  const males = shuffle(memberList.filter(m => m.gender === "male"));
+  const females = shuffle(memberList.filter(m => m.gender === "female"));
+  const maxCount = Math.max(males.length, females.length);
+  const total = memberList.length;
+  const maxSize = Math.ceil(total / tc_count);
+
+  const makeSlots = () => {
+    const slots = [];
+    for (let i = 0; i < maxCount; i++) slots.push(i % tc_count);
+    return shuffle(slots);
+  };
+
+  for (let attempt = 0; attempt < 2000; attempt++) {
+    const t = Array.from({ length: tc_count }, (_, i) => ({ id: i, members: [] }));
+    const ms = makeSlots(), fs = makeSlots();
+    males.forEach((m, i) => t[ms[i]].members.push(m));
+    females.forEach((m, i) => t[fs[i]].members.push(m));
+    const sizes = t.map(x => x.members.length);
+    if (Math.max(...sizes) <= maxSize) return t;
+  }
+  // fallback
+  const t = Array.from({ length: tc_count }, (_, i) => ({ id: i, members: [] }));
+  const ms = makeSlots(), fs = makeSlots();
+  males.forEach((m, i) => t[ms[i]].members.push(m));
+  females.forEach((m, i) => t[fs[i]].members.push(m));
+  return t;
+}
+
+function generateRounds(tc_count, cc_count) {
+  const n = tc_count % 2 === 0 ? tc_count : tc_count + 1;
+  const tms = Array.from({ length: n }, (_, i) => i);
+  const result = [];
+  for (let r = 0; r < n - 1; r++) {
+    const matches = [], resting = [];
+    for (let k = 0; k < n / 2; k++) {
+      const a = tms[k], b = tms[n - 1 - k];
+      if (a === tc_count || b === tc_count) {
+        const real = a === tc_count ? b : a;
+        if (real < tc_count) resting.push(real);
+      } else {
+        matches.push({ id: `${r}-${k}`, teamA: a, teamB: b });
+      }
+    }
+    const groups = [];
+    for (let i = 0; i < matches.length; i += cc_count)
+      groups.push(matches.slice(i, i + cc_count));
+    result.push({ resting, groups });
+    const last = tms.pop();
+    tms.splice(1, 0, last);
+  }
+  return result;
+}
+
+// ===== ACTIONS =====
+function addMember() {
+  const name = document.getElementById("new-name").value.trim();
+  const gender = document.getElementById("new-gender").value;
+  if (!name) return;
+  members.push({ id: nextId++, name, gender });
+  document.getElementById("new-name").value = "";
+  calcAuto();
+  teamCount = autoTeamCount;
+  courtCount = autoCourtCount;
+  render();
+}
+
+function removeMember(id) {
+  members = members.filter(m => m.id !== id);
+  calcAuto();
+  teamCount = autoTeamCount;
+  courtCount = autoCourtCount;
+  render();
+}
+
+function changeTeamCount(delta) {
+  teamCount = Math.max(2, Math.min(12, teamCount + delta));
+  render();
+}
+
+function changeCourtCount(delta) {
+  courtCount = Math.max(1, Math.min(teamCount - 1, courtCount + delta));
+  render();
+}
+
+function doDraw() {
+  if (members.length < teamCount || teamCount < 2) return;
+  teams = drawLots(members, teamCount);
+  rounds = generateRounds(teamCount, courtCount);
+  scores = {};
+  switchTab(1);
+}
+
+function setScore(matchId, field, val) {
+  if (!scores[matchId]) scores[matchId] = {};
+  scores[matchId][field] = val === "" ? null : parseInt(val);
+  renderRounds();
+  renderStandings();
+}
+
+function switchTab(i) {
+  currentTab = i;
+  document.querySelectorAll(".tab-btn").forEach((b, j) => b.classList.toggle("active", i === j));
+  document.querySelectorAll(".tab-content").forEach((c, j) => c.classList.toggle("active", i === j));
+}
+
+// ===== RENDER =====
+function gdot(gender) {
+  return `<span class="gdot ${gender}"></span>`;
+}
+
+function renderMemberList() {
+  const males = members.filter(m => m.gender === "male");
+  const females = members.filter(m => m.gender === "female");
+  let html = "";
+
+  if (males.length > 0) {
+    html += `<div class="member-section-label male">${gdot("male")} 男性 ${males.length}人</div>`;
+    males.forEach(m => {
+      html += `<div class="member-row">
+        <div class="member-row-left">${gdot("male")}<span>${m.name}</span></div>
+        <button class="btn-remove" onclick="removeMember(${m.id})">✕</button>
+      </div>`;
+    });
+  }
+  if (females.length > 0) {
+    html += `<div class="member-section-label female" style="margin-top:8px">${gdot("female")} 女性 ${females.length}人</div>`;
+    females.forEach(m => {
+      html += `<div class="member-row">
+        <div class="member-row-left">${gdot("female")}<span>${m.name}</span></div>
+        <button class="btn-remove" onclick="removeMember(${m.id})">✕</button>
+      </div>`;
+    });
+  }
+  if (members.length === 0) html = `<div style="text-align:center;color:#CBD5E1;padding:20px 0;font-size:14px">まだ登録されていません</div>`;
+  document.getElementById("member-list").innerHTML = html;
+}
+
+function renderControls() {
+  const males = members.filter(m => m.gender === "male");
+  const females = members.filter(m => m.gender === "female");
+  document.getElementById("male-count").textContent = males.length;
+  document.getElementById("female-count").textContent = females.length;
+  document.getElementById("member-total").textContent = members.length;
+  document.getElementById("team-count-val").textContent = teamCount;
+  document.getElementById("court-count-val").textContent = courtCount;
+
+  const teamIsAuto = teamCount === autoTeamCount;
+  const courtIsAuto = courtCount === autoCourtCount;
+  document.getElementById("team-auto-badge").style.display = teamIsAuto ? "" : "none";
+  document.getElementById("court-auto-badge").style.display = courtIsAuto ? "" : "none";
+
+  const canDraw = members.length >= teamCount && teamCount >= 2;
+  document.getElementById("btn-draw-sm").disabled = !canDraw;
+  document.getElementById("btn-draw-main").disabled = !canDraw;
+
+  const warn = document.getElementById("warning-box");
+  if (!canDraw && members.length > 0) {
+    warn.innerHTML = `<div class="warning">⚠️ メンバーが${teamCount}人以上必要です（現在${members.length}人）</div>`;
+  } else {
+    warn.innerHTML = "";
+  }
+}
+
+function renderTeams() {
+  const el = document.getElementById("team-result");
+  if (!teams) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🏐</div><div class="empty-msg">メンバータブでくじ引きを実行してください</div></div>`;
+    return;
+  }
+  let html = "";
+  teams.forEach((team, i) => {
+    const c = tc(i);
+    const ms = team.members.filter(m => m.gender === "male");
+    const fs = team.members.filter(m => m.gender === "female");
+    html += `<div class="team-card" style="background:${c.bg};border-color:${c.border}">
+      <div class="team-card-header">
+        <div class="team-card-name">
+          <span class="team-card-emoji">${c.emoji}</span>
+          <span class="team-card-label" style="color:${c.text}">${c.label}</span>
+        </div>
+        <div class="team-count-badges">
+          <span class="team-count-badge" style="background:#3B82F6">● ${ms.length}</span>
+          <span class="team-count-badge" style="background:#F43F5E">● ${fs.length}</span>
+        </div>
+      </div>
+      <div class="member-tags">
+        ${ms.map(m => `<div class="member-tag" style="border-color:${c.border}">${gdot("male")}${m.name}</div>`).join("")}
+        ${fs.map(m => `<div class="member-tag" style="border-color:${c.border}">${gdot("female")}${m.name}</div>`).join("")}
+      </div>
+    </div>`;
+  });
+  html += `<button class="btn-reshuffle" onclick="doDraw()">🔄 引き直す</button>`;
+  el.innerHTML = html;
+}
+
+function renderRounds() {
+  const el = document.getElementById("rounds-content");
+  if (rounds.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🏐</div><div class="empty-msg">くじ引きを実行すると試合表が作成されます</div></div>`;
+    return;
+  }
+  let html = "";
+  rounds.forEach((round, ri) => {
+    html += `<div style="margin-bottom:16px">`;
+    html += `<div class="round-header"><div class="round-label">第${ri+1}ラウンド</div>`;
+    round.resting.forEach(t => {
+      const c = tc(t);
+      html += `<span class="rest-badge" style="background:${c.bg};border-color:${c.border};color:${c.text}">⏸ ${c.label}</span>`;
+    });
+    html += `</div>`;
+
+    round.groups.forEach((group, gi) => {
+      html += `<div class="match-group">`;
+      group.forEach((match, mi) => {
+        const cA = tc(match.teamA), cB = tc(match.teamB);
+        const sA = scores[match.id]?.scoreA ?? null;
+        const sB = scores[match.id]?.scoreB ?? null;
+        const played = sA !== null && sB !== null;
+        html += `<div class="match-row">`;
+        if (courtCount > 1) html += `<span class="court-label">C${mi+1}</span>`;
+        html += `<div class="team-badge" style="background:${cA.bg};border-color:${cA.border};color:${cA.text}">${cA.emoji} ${cA.label}</div>`;
+        html += `<span class="vs-label">vs</span>`;
+        html += `<div class="team-badge" style="background:${cB.bg};border-color:${cB.border};color:${cB.text}">${cB.emoji} ${cB.label}</div>`;
+        html += `<div class="score-group">`;
+        if (played) html += `<span class="score-check">✓</span>`;
+        html += `<input class="score-input" type="number" min="0" style="border-color:${cA.border}" value="${sA ?? ""}" oninput="setScore('${match.id}','scoreA',this.value)">`;
+        html += `<span class="score-dash">—</span>`;
+        html += `<input class="score-input" type="number" min="0" style="border-color:${cB.border}" value="${sB ?? ""}" oninput="setScore('${match.id}','scoreB',this.value)">`;
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderStandings() {
+  const el = document.getElementById("rounds-content");
+  if (!teams || rounds.length === 0) return;
+  const allMatches = rounds.flatMap(r => r.groups.flat());
+  const anyPlayed = allMatches.some(m => {
+    const s = scores[m.id];
+    return s?.scoreA !== null && s?.scoreA !== undefined && s?.scoreB !== null && s?.scoreB !== undefined;
+  });
+
+  const existing = document.querySelector(".standings");
+  if (existing) existing.remove();
+  if (!anyPlayed) return;
+
+  let html = `<div class="standings"><div class="standings-title">📊 勝敗集計</div>`;
+  teams.forEach((_, i) => {
+    const c = tc(i);
+    const wins = allMatches.filter(m => {
+      const s = scores[m.id];
+      if (!s || s.scoreA === null || s.scoreB === null) return false;
+      return (m.teamA === i && s.scoreA > s.scoreB) || (m.teamB === i && s.scoreB > s.scoreA);
+    }).length;
+    const losses = allMatches.filter(m => {
+      const s = scores[m.id];
+      if (!s || s.scoreA === null || s.scoreB === null) return false;
+      return (m.teamA === i && s.scoreA < s.scoreB) || (m.teamB === i && s.scoreB < s.scoreA);
+    }).length;
+    html += `<div class="standing-row" style="background:${c.bg};border-color:${c.border}">
+      <span style="font-weight:700;color:${c.text}">${c.emoji} ${c.label}</span>
+      <span style="font-size:15px;font-weight:700">
+        <span style="color:#16A34A">${wins}勝</span>
+        <span style="color:#CBD5E1"> / </span>
+        <span style="color:#DC2626">${losses}敗</span>
+      </span>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById("rounds-content").insertAdjacentHTML("beforeend", html);
+}
+
+function renderRest() {
+  const el = document.getElementById("rest-content");
+  if (rounds.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🏐</div><div class="empty-msg">くじ引きを実行すると休憩順が表示されます</div></div>`;
+    return;
+  }
+  let html = `<div class="rest-info">💡 各ラウンドの休憩チームです</div>`;
+  rounds.forEach((round, ri) => {
+    const allMatches = round.groups.flat();
+    const busy = new Set(allMatches.flatMap(m => [m.teamA, m.teamB]));
+    const resting = teams ? teams.map((_, i) => i).filter(i => !busy.has(i)) : [];
+    html += `<div class="rest-row">
+      <span class="rest-round-label">第${ri+1}ラウンド</span>`;
+    if (resting.length > 0) {
+      html += `<div class="rest-badges">`;
+      resting.forEach(t => {
+        const c = tc(t);
+        html += `<span class="rest-badge-item" style="background:${c.bg};border-color:${c.border};color:${c.text}">⏸ ${c.label}</span>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<span style="font-size:12px;color:#94A3B8">全チーム試合中</span>`;
+    }
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function render() {
+  calcAuto();
+  renderControls();
+  renderMemberList();
+  renderTeams();
+  renderRounds();
+  renderStandings();
+  renderRest();
+}
+
+// ===== INIT =====
+calcAuto();
+teamCount = autoTeamCount;
+courtCount = autoCourtCount;
+render();
+</script>
+
+</body>
+</html>
