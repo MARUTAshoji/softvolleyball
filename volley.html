@@ -360,17 +360,8 @@ const PALETTE = [
 ];
 const tc = i => PALETTE[i % PALETTE.length];
 
-let members = [
-  { id:1, name:"田中", gender:"male" },
-  { id:2, name:"鈴木", gender:"male" },
-  { id:3, name:"佐藤", gender:"male" },
-  { id:4, name:"山田", gender:"male" },
-  { id:5, name:"伊藤", gender:"female" },
-  { id:6, name:"渡辺", gender:"female" },
-  { id:7, name:"小林", gender:"female" },
-  { id:8, name:"加藤", gender:"female" },
-];
-let nextId = 9;
+let members = [];
+let nextId = 1;
 let teamCount = 2;
 let courtCount = 1;
 let autoTeamCount = 2;
@@ -472,6 +463,7 @@ function removeMember(id) {
 
 function changeTeamCount(delta) {
   teamCount = Math.max(2, Math.min(12, teamCount + delta));
+  courtCount = Math.max(1, Math.min(teamCount - 1, courtCount)); // コート数を上限内に収める
   render();
 }
 
@@ -485,13 +477,21 @@ function doDraw() {
   teams = drawLots(members, teamCount);
   rounds = generateRounds(teamCount, courtCount);
   scores = {};
+  renderTeams();
+  renderRounds();
+  renderRest();
   switchTab(1);
 }
 
 function setScore(matchId, field, val) {
   if (!scores[matchId]) scores[matchId] = {};
   scores[matchId][field] = val === "" ? null : parseInt(val);
-  renderRounds();
+  // 全再描画せず、該当試合の✓マークだけ更新
+  const sA = scores[matchId]?.scoreA;
+  const sB = scores[matchId]?.scoreB;
+  const played = sA !== null && sA !== undefined && sB !== null && sB !== undefined;
+  const checkEl = document.getElementById("check-" + matchId);
+  if (checkEl) checkEl.style.display = played ? "inline" : "none";
   renderStandings();
 }
 
@@ -620,7 +620,8 @@ function renderRounds() {
         html += `<span class="vs-label">vs</span>`;
         html += `<div class="team-badge" style="background:${cB.bg};border-color:${cB.border};color:${cB.text}">${cB.emoji} ${cB.label}</div>`;
         html += `<div class="score-group">`;
-        if (played) html += `<span class="score-check">✓</span>`;
+        if (played) html += `<span class="score-check" id="check-${match.id}">✓</span>`;
+        else html += `<span class="score-check" id="check-${match.id}" style="display:none">✓</span>`;
         html += `<input class="score-input" type="number" min="0" style="border-color:${cA.border}" value="${sA ?? ""}" oninput="setScore('${match.id}','scoreA',this.value)">`;
         html += `<span class="score-dash">—</span>`;
         html += `<input class="score-input" type="number" min="0" style="border-color:${cB.border}" value="${sB ?? ""}" oninput="setScore('${match.id}','scoreB',this.value)">`;
